@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debuggers'Den | Professional Systems Analysis & Design</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --bg-panel: #0a0a0a;
+            --bg-surface: #111111;
+            --primary: #00ffff;
+            --primary-dark: #00c4c4;
+            --secondary: #8a2be2;
+            --secondary-light: #9b42ff;
+            --accent: #ff6b6b;
+            --success: #00ff9d;
+            --warning: #ffcc00;
+            --text-main: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #666666;
+            --glass: rgba(10, 10, 10, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-light: rgba(255, 255, 255, 0.03);
+            --shadow-glow: 0 0 30px rgba(0, 255, 255, 0.15);
+            --shadow-glow-secondary: 0 0 30px rgba(138, 43, 226, 0.15);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            line-height: 1.7;
+            min-height: 100vh;
+            font-size: 18px;
+            overflow-x: hidden;
+        }
+
+        /* === Typography System === */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--primary) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            color: var(--text-main);
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 1.2rem;
+        }
+
+        h4 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        h5 {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .lead {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            font-weight: 400;
+            margin-bottom: 2.5rem;
+            max-width: 900px;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+
+        /* === Layout System === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        /* === Header & Navigation === */
+        .main-header {
+            padding: 4rem 0 3rem;
+            position: relative;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .brand-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+        .logo-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(145deg, #000000, #0a0a0a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 
+                0 0 60px rgba(0, 255, 255, 0.4),
+                inset 0 0 40px rgba(0, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--primary));
+            border-radius: 50%;
+            z-index: -1;
+            animation: borderRotate 8s linear infinite;
+        }
+
+        .logo-symbol {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .debug-dots {
+            display: flex;
+            gap: 20px;
+        }
+
+        .debug-dot {
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            animation: debugPulse 3s ease-in-out infinite;
+        }
+
+        .debug-dot:nth-child(2) { animation-delay: 0.5s; }
+
+        .brand-name {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .brand-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, #ffffff 40%, #ffffff 60%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+            margin-bottom: 0.8rem;
+        }
+
+        .brand-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            padding: 0 15px;
+        }
+
+        .brand-subtitle::before,
+        .brand-subtitle::after {
+            content: '▸';
+            color: var(--primary);
+            margin: 0 10px;
+            opacity: 0.8;
+        }
+
+        /* === Dashboard Grid === */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        /* === Card System === */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .dashboard-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-number {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 4rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03);
+            z-index: 0;
+        }
+
+        /* === Content Cards === */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .content-card {
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .content-card::after {
+            content: '';
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+        }
+
+        /* === Grid Systems === */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        /* === Component Cards === */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            transition: var(--transition);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 255, 0.02);
+            transform: translateY(-4px);
+        }
+
+        .feature-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            display: inline-block;
+        }
+
+        .system-card {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(138, 43, 226, 0.05));
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        /* === Information Panels === */
+        .info-panel {
+            background: rgba(0, 255, 255, 0.03);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem 2rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin: 2rem 0;
+        }
+
+        .highlight-panel {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(138, 43, 226, 0.05));
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 2.5rem;
+            margin: 2.5rem 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        /* === Lists === */
+        .styled-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .styled-list li {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .styled-list li::before {
+            content: '▸';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .styled-list.checklist li::before {
+            content: '✓';
+            color: var(--success);
+        }
+
+        /* === Buttons === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-dark);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        /* === Chapter Navigation === */
+        .chapter-nav {
+            display: flex;
+            gap: 1rem;
+            margin: 3rem 0 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(0, 255, 255, 0.05);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-item .badge {
+            background: var(--primary);
+            color: var(--bg-dark);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* === Progress & Status === */
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-sm);
+            color: var(--success);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* === Table Styling === */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .data-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .data-table tr:hover {
+            background: rgba(0, 255, 255, 0.03);
+        }
+
+        /* === Timeline === */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 4rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border: 4px solid var(--bg-surface);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* === Chapter Navigation Icons === */
+        .chapter-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4rem 0 2rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-icon {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .nav-icon:hover {
+            background: rgba(0, 255, 255, 0.05);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-icon i {
+            font-size: 1.2rem;
+        }
+
+        /* === Quick Reference Formatting === */
+        .quick-ref-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .ref-card {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(138, 43, 226, 0.03));
+            border: 1px solid rgba(0, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .ref-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .ref-card h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ref-card h4 i {
+            font-size: 1.2rem;
+        }
+
+        .ref-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .ref-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .ref-list li::before {
+            content: '▸';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* === Footer === */
+        footer {
+            text-align: center;
+            padding: 4rem 0;
+            margin-top: 6rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+
+        /* === Animations === */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        @keyframes borderRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes debugPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+            50% { 
+                transform: scale(1.2);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* === Responsive Design === */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            h1, .brand-title {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+            
+            h1, .brand-title {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            h3 {
+                font-size: 1.6rem;
+            }
+            
+            .brand-subtitle {
+                font-size: 1rem;
+                letter-spacing: 2px;
+            }
+            
+            .card {
+                padding: 2rem;
+            }
+            
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .chapter-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-item {
+                justify-content: center;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .chapter-navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-icon {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-header {
+                padding: 3rem 0 2rem;
+            }
+            
+            h1, .brand-title {
+                font-size: 2.2rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            .lead {
+                font-size: 1.2rem;
+            }
+            
+            .brand-subtitle {
+                font-size: 0.9rem;
+                padding: 0 10px;
+            }
+            
+            .dashboard-grid {
+                gap: 1.5rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Main Dashboard View -->
+<div id="dashboard" class="content-section active">
+    <header class="main-header">
+        <div class="container">
+            <div class="brand-container">
+                <div class="logo-wrapper">
+                    <div class="logo-circle">
+                        <div class="logo-symbol">
+                            <div class="debug-dots">
+                                <div class="debug-dot"></div>
+                                <div class="debug-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="brand-name">
+                    <div class="brand-title">Debuggers'Den</div>
+                    <div class="brand-subtitle">Systems Analysis & Design</div>
+                </div>
+            </div>
+            
+            <h1>Professional Systems Reference</h1>
+            
+            <div class="chapter-nav">
+                <a href="#chapter1" class="nav-item active" onclick="openSection('chapter1')">
+                    <span class="badge">01</span>
+                    <span>System Foundations</span>
+                </a>
+                <a href="#chapter2" class="nav-item" onclick="openSection('chapter2')">
+                    <span class="badge">02</span>
+                    <span>Classifications</span>
+                </a>
+                <a href="#chapter3" class="nav-item" onclick="openSection('chapter3')">
+                    <span class="badge">03</span>
+                    <span>SDLC</span>
+                </a>
+                <a href="#quickref" class="nav-item" onclick="openSection('quickref')">
+                    <span class="badge">QR</span>
+                    <span>Quick Reference</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Key Statistics -->
+        <div class="grid-4">
+            <div class="stat-box">
+                <div class="stat-number">40%</div>
+                <p>Increase in project success rates with proper SDLC implementation</p>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">65K</div>
+                <p>Transactions processed per second by modern TPS systems</p>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">70%</div>
+                <p>System lifecycle costs attributed to maintenance phase</p>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">6</div>
+                <p>Standard phases in comprehensive Systems Development Life Cycle</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="dashboard-grid">
+            <!-- Chapter 1 Card -->
+            <div class="card dashboard-card">
+                <div class="chapter-number">01</div>
+                <h3>System Foundations & Core Concepts</h3>
+                <p>Understanding the fundamental principles that define all systems and the methodology of Systems Analysis and Design.</p>
+                
+                <div class="info-panel">
+                    <h5>Learning Objectives</h5>
+                    <ul class="styled-list">
+                        <li>Define system components and relationships</li>
+                        <li>Differentiate between analysis and design</li>
+                        <li>Apply system thinking to real-world scenarios</li>
+                    </ul>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openSection('chapter1')">
+                        <i class="fas fa-book-open"></i> Read Chapter
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-download"></i> <a href="Chapter 1.pdf" style="color: inherit; text-decoration: none;">Download PDF</a>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chapter 2 Card -->
+            <div class="card dashboard-card">
+                <div class="chapter-number">02</div>
+                <h3>System Types & Classifications</h3>
+                <p>Comprehensive categorization of systems based on purpose, complexity, interaction patterns, and predictability.</p>
+                
+                <div class="info-panel">
+                    <h5>Key System Types</h5>
+                    <ul class="styled-list">
+                        <li>Transaction Processing Systems (TPS)</li>
+                        <li>Management Information Systems (MIS)</li>
+                        <li>Decision Support Systems (DSS)</li>
+                        <li>Enterprise Resource Planning (ERP)</li>
+                    </ul>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openSection('chapter2')">
+                        <i class="fas fa-book-open"></i> Read Chapter
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-download"></i> <a href="Chapter 2.pdf" style="color: inherit; text-decoration: none;">Download PDF</a>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chapter 3 Card -->
+            <div class="card dashboard-card">
+                <div class="chapter-number">03</div>
+                <h3>Systems Development Life Cycle</h3>
+                <p>The industry-standard framework for systematically building high-quality information systems through six sequential phases.</p>
+                
+                <div class="info-panel">
+                    <h5>SDLC Phases</h5>
+                    <ul class="styled-list checklist">
+                        <li>Planning → Analysis → Design</li>
+                        <li>Development → Implementation → Maintenance</li>
+                    </ul>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openSection('chapter3')">
+                        <i class="fas fa-book-open"></i> Read Chapter
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-download"></i> <a href="Chapter 3.pdf" style="color: inherit; text-decoration: none;">Download PDF</a>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Reference Card -->
+            <div class="card dashboard-card">
+                <div class="chapter-number">QR</div>
+                <h3>Quick Reference Guide</h3>
+                <p>Essential concepts, methodologies, and best practices across all chapters for rapid understanding and application.</p>
+                
+                <div class="highlight-panel">
+                    <h5>Professional Practice Principles</h5>
+                    <p>Analyze before designing, design before developing, test throughout development, plan for maintenance from start.</p>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openSection('quickref')">
+                        <i class="fas fa-search"></i> View Reference
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-print"></i> <a href="Quick Refrence.pdf" style="color: inherit; text-decoration: none;">Print Guide</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chapter 1 Detailed View -->
+<div id="chapter1" class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2>Chapter 1: System Foundations</h2>
+                <p class="lead">Understanding the fundamental principles and components that define all systems in Systems Analysis and Design.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openSection('dashboard')">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="card">
+                <h3><i class="fas fa-cogs icon"></i> What is a System?</h3>
+                <p>A system represents an organized collection of interconnected elements—including people, processes, technology, and resources—that work together within defined boundaries to achieve specific purposes or functions. Systems are not random assortments but structured entities with clear objectives and interactions.</p>
+                
+                <div class="highlight-panel">
+                    <h4>Real-World System: Amazon's Global Operations</h4>
+                    <p>Amazon operates one of the world's most complex systems, integrating warehousing, inventory management, order processing, delivery logistics, customer service, and AI-powered recommendations. This system processes millions of transactions daily while maintaining 99.9% reliability.</p>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <h4>Systems Analysis</h4>
+                        <div class="feature-card">
+                            <h5>Analysis Focus</h5>
+                            <p>Understanding the problem domain and defining what the system must accomplish through systematic investigation and documentation.</p>
+                            <ul class="styled-list">
+                                <li>Requirement Gathering through interviews and surveys</li>
+                                <li>Feasibility Analysis for technical and economic viability</li>
+                                <li>Problem Identification in current processes</li>
+                                <li>Modeling with visual representations</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Systems Design</h4>
+                        <div class="feature-card">
+                            <h5>Design Focus</h5>
+                            <p>Creating the technical blueprint that transforms requirements into a workable system architecture and specifications.</p>
+                            <ul class="styled-list">
+                                <li>Architectural Design for infrastructure</li>
+                                <li>Interface Design for user interaction</li>
+                                <li>Data Design for storage solutions</li>
+                                <li>Process Design for workflows and logic</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>The Seven Essential System Components</h3>
+                <p>Every system, regardless of its complexity or domain, consists of these fundamental building blocks that govern its operation and effectiveness.</p>
+                
+                <div class="grid-3">
+                    <div class="feature-card">
+                        <div class="icon">📥</div>
+                        <h4>Inputs</h4>
+                        <p>Resources, data, or materials that enter the system for processing and transformation into valuable outputs.</p>
+                        <div class="status-indicator">Example: Customer orders</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">⚙️</div>
+                        <h4>Processes</h4>
+                        <p>Activities and operations that transform inputs into outputs through defined procedures, algorithms, or workflows.</p>
+                        <div class="status-indicator">Example: Payment processing</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">📤</div>
+                        <h4>Outputs</h4>
+                        <p>Final results or products generated by the system, representing the value created through processing activities.</p>
+                        <div class="status-indicator">Example: Delivered packages</div>
+                    </div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="feature-card">
+                        <div class="icon">🔄</div>
+                        <h4>Feedback</h4>
+                        <p>Information about outputs used to adjust system behavior, correct errors, and improve performance over time.</p>
+                        <div class="status-indicator">Example: User ratings</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">🔒</div>
+                        <h4>Controls</h4>
+                        <p>Security measures and rules ensuring proper system operation, including validation, authentication, and authorization.</p>
+                        <div class="status-indicator">Example: Fraud detection</div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">🌐</div>
+                        <h4>Environment</h4>
+                        <p>External factors affecting but not controlled by the system, including regulations, market conditions, and technological changes.</p>
+                        <div class="status-indicator">Example: GDPR regulations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter Navigation Icons -->
+        <div class="chapter-navigation">
+            <a href="#" class="nav-icon" onclick="openSection('dashboard')">
+                <i class="fas fa-home"></i>
+                <span>Main Dashboard</span>
+            </a>
+            <a href="#" class="nav-icon" onclick="openSection('chapter2')">
+                <span>Next: System Classifications</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Chapter 2 Detailed View -->
+<div id="chapter2" class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2>Chapter 2: System Classifications</h2>
+                <p class="lead">Comprehensive categorization of systems based on purpose, complexity, interaction patterns, and predictability with real-world examples.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openSection('dashboard')">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="card">
+                <h3>Information System Types by Function</h3>
+                <p>Systems can be categorized based on their primary functions, users, and organizational levels they support.</p>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>System Type</th>
+                            <th>Primary Purpose</th>
+                            <th>Key Users</th>
+                            <th>Real-World Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TPS</strong> (Transaction Processing)</td>
+                            <td>High-volume routine transactions</td>
+                            <td>Operational staff</td>
+                            <td>Visa (65K transactions/sec)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MIS</strong> (Management Information)</td>
+                            <td>Summarized reporting & monitoring</td>
+                            <td>Middle managers</td>
+                            <td>Walmart Retail Link</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DSS</strong> (Decision Support)</td>
+                            <td>Analytical decision-making</td>
+                            <td>Analysts & managers</td>
+                            <td>Bloomberg Terminal</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EIS</strong> (Executive Information)</td>
+                            <td>Strategic planning & KPIs</td>
+                            <td>Senior executives</td>
+                            <td>Salesforce Einstein</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ERP</strong> (Enterprise Resource)</td>
+                            <td>Cross-functional integration</td>
+                            <td>All organizational levels</td>
+                            <td>SAP S/4HANA</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Classification by Interaction Patterns</h3>
+                
+                <div class="grid-2">
+                    <div class="feature-card">
+                        <h4>Open Systems</h4>
+                        <p>Interact with their environment, exchanging information, energy, or resources. Continuously adapt based on external inputs.</p>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                        
+                        <ul class="styled-list">
+                            <li><strong>Characteristics:</strong> Dynamic, adaptive, reliant on external inputs</li>
+                            <li><strong>Advantages:</strong> Responsive to changes, innovative</li>
+                            <li><strong>Example:</strong> Google Search Engine</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4>Closed Systems</h4>
+                        <p>Operate independently with minimal or no exchange with external environment. Self-contained with fixed processes.</p>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                        
+                        <ul class="styled-list">
+                            <li><strong>Characteristics:</strong> Isolated, fixed inputs/outputs</li>
+                            <li><strong>Advantages:</strong> Predictable, controlled, secure</li>
+                            <li><strong>Example:</strong> Industrial manufacturing robots</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Classification by Predictability</h3>
+                
+                <div class="grid-2">
+                    <div class="feature-card">
+                        <h4>Deterministic Systems</h4>
+                        <p>Output is 100% predictable based on input and rules. No randomness involved in outcomes.</p>
+                        
+                        <div class="info-panel">
+                            <h5>Applications</h5>
+                            <ul class="styled-list checklist">
+                                <li>Calculator operations</li>
+                                <li>Database queries</li>
+                                <li>Accounting systems</li>
+                                <li>Airline reservations</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4>Probabilistic Systems</h4>
+                        <p>Outcome involves randomness and statistical probabilities. Models real-world uncertainty.</p>
+                        
+                        <div class="info-panel">
+                            <h5>Applications</h5>
+                            <ul class="styled-list checklist">
+                                <li>Stock market analysis</li>
+                                <li>Disease spread modeling</li>
+                                <li>AI learning systems</li>
+                                <li>Weather forecasting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter Navigation Icons -->
+        <div class="chapter-navigation">
+            <a href="#" class="nav-icon" onclick="openSection('chapter1')">
+                <i class="fas fa-arrow-left"></i>
+                <span>Previous: System Foundations</span>
+            </a>
+            <a href="#" class="nav-icon" onclick="openSection('chapter3')">
+                <span>Next: SDLC</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Chapter 3 Detailed View -->
+<div id="chapter3" class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2>Chapter 3: Systems Development Life Cycle</h2>
+                <p class="lead">The industry-standard framework for systematically building high-quality information systems through six sequential phases with practical implementation examples.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openSection('dashboard')">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="card">
+                <h3>Introduction to SDLC</h3>
+                <p>The Systems Development Life Cycle provides a structured framework for developing, implementing, and maintaining information systems. This systematic approach ensures systems meet organizational needs while managing risks, costs, and timelines effectively.</p>
+                
+                <div class="highlight-panel">
+                    <h4>Why SDLC Matters</h4>
+                    <div class="grid-3">
+                        <div class="stat-box">
+                            <div class="stat-number">40%</div>
+                            <p>Increase in project success rates</p>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">25%</div>
+                            <p>Reduction in development costs</p>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">60%</div>
+                            <p>Fewer critical defects</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>The Six SDLC Phases</h3>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>1. Planning Phase</h4>
+                            <p>Establish project foundation and determine feasibility before committing resources. Answers: "Is this project worth doing?"</p>
+                            <ul class="styled-list">
+                                <li>Project scope definition</li>
+                                <li>Stakeholder identification</li>
+                                <li>Feasibility studies</li>
+                                <li>Example: Tesla's Autopilot planning</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>2. Analysis Phase</h4>
+                            <p>Deeply understand and document system requirements to ensure the right solution is built. Answers: "What must the system do?"</p>
+                            <ul class="styled-list">
+                                <li>Requirement gathering</li>
+                                <li>Current system analysis</li>
+                                <li>Modeling techniques</li>
+                                <li>Example: Airbnb's user research</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>3. Design Phase</h4>
+                            <p>Create a comprehensive technical blueprint translating requirements into buildable specifications. Answers: "How will the system work?"</p>
+                            <ul class="styled-list">
+                                <li>Architectural design</li>
+                                <li>Interface design</li>
+                                <li>Database design</li>
+                                <li>Example: Zoom's security redesign</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Implementation Strategies Comparison</h3>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Risk Level</th>
+                            <th>Cost</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Direct</strong> (Immediate replacement)</td>
+                            <td>High</td>
+                            <td>Low</td>
+                            <td>Non-critical systems</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Parallel</strong> (Simultaneous operation)</td>
+                            <td>Low</td>
+                            <td>High</td>
+                            <td>Mission-critical systems</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phased</strong> (Gradual rollout)</td>
+                            <td>Medium</td>
+                            <td>Medium</td>
+                            <td>Large-scale implementations</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pilot</strong> (Limited deployment)</td>
+                            <td>Low-Medium</td>
+                            <td>Low-Medium</td>
+                            <td>New system types</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Maintenance Phase Categories</h3>
+                
+                <div class="grid-4">
+                    <div class="feature-card">
+                        <div class="icon">🔧</div>
+                        <h5>Corrective</h5>
+                        <p>Fixing defects and errors discovered after implementation.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">🔄</div>
+                        <h5>Adaptive</h5>
+                        <p>Modifying system for changing environments and requirements.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">✨</div>
+                        <h5>Perfective</h5>
+                        <p>Enhancing system with new features and improvements.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon">🛡️</div>
+                        <h5>Preventive</h5>
+                        <p>Proactive measures to prevent future problems and vulnerabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter Navigation Icons -->
+        <div class="chapter-navigation">
+            <a href="#" class="nav-icon" onclick="openSection('chapter2')">
+                <i class="fas fa-arrow-left"></i>
+                <span>Previous: System Classifications</span>
+            </a>
+            <a href="#" class="nav-icon" onclick="openSection('quickref')">
+                <span>Next: Quick Reference</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reference View -->
+<div id="quickref" class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2>Quick Reference Guide</h2>
+                <p class="lead">Essential concepts, methodologies, and best practices for rapid understanding and application.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openSection('dashboard')">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </div>
+
+        <div class="content-card">
+            <div class="card">
+                <div class="quick-ref-grid">
+                    <div class="ref-card">
+                        <h4><i class="fas fa-cogs"></i> Core Concepts</h4>
+                        <ul class="ref-list">
+                            <li><strong>System:</strong> Organized collection of interconnected elements</li>
+                            <li><strong>Systems Analysis:</strong> Understanding problem domain</li>
+                            <li><strong>Systems Design:</strong> Creating technical blueprint</li>
+                            <li><strong>SDLC:</strong> Structured development framework</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ref-card">
+                        <h4><i class="fas fa-sitemap"></i> System Types</h4>
+                        <ul class="ref-list">
+                            <li><strong>TPS:</strong> Transaction Processing Systems</li>
+                            <li><strong>MIS:</strong> Management Information Systems</li>
+                            <li><strong>DSS:</strong> Decision Support Systems</li>
+                            <li><strong>ERP:</strong> Enterprise Resource Planning</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ref-card">
+                        <h4><i class="fas fa-code-branch"></i> SDLC Phases</h4>
+                        <ul class="ref-list">
+                            <li>1. Planning</li>
+                            <li>2. Analysis</li>
+                            <li>3. Design</li>
+                            <li>4. Development</li>
+                            <li>5. Implementation</li>
+                            <li>6. Maintenance</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ref-card">
+                        <h4><i class="fas fa-check-circle"></i> Best Practices</h4>
+                        <ul class="ref-list">
+                            <li>Analyze before designing</li>
+                            <li>Design before developing</li>
+                            <li>Test throughout development</li>
+                            <li>Plan for maintenance</li>
+                            <li>Engage stakeholders</li>
+                            <li>Document decisions</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ref-card">
+                        <h4><i class="fas fa-chart-line"></i> Key Statistics</h4>
+                        <ul class="ref-list">
+                            <li>40% higher project success with SDLC</li>
+                            <li>70% of costs in maintenance phase</li>
+                            <li>65K TPS transactions/second</li>
+                            <li>60% fewer defects with proper methods</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ref-card">
+                        <h4><i class="fas fa-certificate"></i> Certifications</h4>
+                        <ul class="ref-list">
+                            <li><strong>CISA:</strong> Information Systems Auditor</li>
+                            <li><strong>CISSP:</strong> Security Professional</li>
+                            <li><strong>PMP:</strong> Project Management</li>
+                            <li><strong>ITIL:</strong> Service Management</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-panel">
+                    <h4>Methodology Flow</h4>
+                    <div class="grid-2">
+                        <div>
+                            <h5>Analysis → Design</h5>
+                            <p>What → How: Transform requirements into specifications through systematic investigation and technical blueprint creation.</p>
+                        </div>
+                        <div>
+                            <h5>Design → Development</h5>
+                            <p>Blueprint → Implementation: Turn specifications into working system through coding, testing, and integration.</p>
+                        </div>
+                    </div>
+                    <div class="grid-2" style="margin-top: 1.5rem;">
+                        <div>
+                            <h5>Requirements → Testing</h5>
+                            <p>Validation throughout lifecycle ensures quality and alignment with stakeholder needs through continuous verification.</p>
+                        </div>
+                        <div>
+                            <h5>Development → Maintenance</h5>
+                            <p>Plan for ongoing support, updates, and improvements to ensure system longevity and continued business value.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h4>Professional Practice Principles</h4>
+                    <p>Successful systems professionals follow these core principles: Analyze before designing to understand the problem domain thoroughly. Design before developing to create a comprehensive technical blueprint. Test throughout development to ensure quality at every stage. Plan for maintenance from the start to ensure long-term system viability. Consider security in all phases to protect against threats. Engage stakeholders continuously to ensure alignment with business needs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter Navigation Icons -->
+        <div class="chapter-navigation">
+            <a href="#" class="nav-icon" onclick="openSection('chapter3')">
+                <i class="fas fa-arrow-left"></i>
+                <span>Previous: SDLC</span>
+            </a>
+            <a href="#" class="nav-icon" onclick="openSection('dashboard')">
+                <span>Back to Dashboard</span>
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-logo">Debuggers'Den</div>
+            <p>Systems Analysis & Design Professional Reference | Complete Three-Chapter Guide with Real-World Applications</p>
+            
+            <div class="footer-links">
+                <a href="#" class="footer-link">Course Syllabus</a>
+                <a href="#" class="footer-link">Case Studies</a>
+                <a href="#" class="footer-link">Resources</a>
+                <a href="#" class="footer-link">Instructor Portal</a>
+                <a href="#" class="footer-link">Contact Support</a>
+            </div>
+            
+            <div class="copyright">
+                © 2026 Debuggers'Den<br>
+                Version 2.1.4 | Last Updated: Jan 2026
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Navigation functionality
+    function openSection(sectionId) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.content-section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        });
+
+        // Show selected section
+        const activeSection = document.getElementById(sectionId);
+        activeSection.classList.add('active');
+        activeSection.style.display = 'block';
+        
+        // Update navigation items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Find and activate the corresponding nav item
+        const navItem = document.querySelector(`.nav-item[href="#${sectionId}"]`);
+        if (navItem) {
+            navItem.classList.add('active');
+        }
+        
+        // Scroll to top
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        const dashboard = document.getElementById('dashboard');
+        dashboard.style.display = 'block';
+        
+        // Add animations to cards on load
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
+
+</body>
+</html>
